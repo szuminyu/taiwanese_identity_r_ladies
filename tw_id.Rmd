@@ -1,0 +1,155 @@
+---
+title: "Taiwanese Identity"
+author: "Szu-Min Yu, Data Scientist @ DKC"
+date: "6/19/2019"
+output:
+  beamer_presentation:
+    incremental: yes
+  ioslides_presentation:
+    incremental: yes
+    widescreen: yes
+subtitle: Politics between Taiwan & China
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+```
+
+```{r data, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+library(plotly)
+library(ggridges)
+library(emo)
+options(scipen = 999)
+options(stringsAsFactors = FALSE)
+
+#load data 
+data = read_excel('TNSS2002_2019.xlsx', sheet = 'TNSS2002_2019')
+data1 = data %>% select(year, tundo6, age, TaiwanID)
+data1$tundo6 = as.factor(data1$tundo6)
+data1$age = as.numeric(data1$age)
+data1$TaiwanID = as.character(data1$TaiwanID)
+data2 = data1 %>% filter(year == 2019)
+
+p = ggplot(data1) +
+  geom_density_ridges(aes(x = age, y = tundo6, fill = TaiwanID), scale = 0.9, alpha = 0.5, from = 0, to = 101)+
+  scale_y_discrete(name = 'Independence vs. Unification',labels = c('Unification Immediately','Status Quo\nthen Unification' ,
+                            'Status Quo', 'Status Quo\nthen Indenpendence',
+                            'Independence Immediately'))+
+  scale_x_continuous(breaks = c(20,40,60,80), limits = c(10,100))+
+  scale_fill_cyclical(name = 'Taiwan Identification', labels = c('Chinese', 'Both', "Taiwanese"), 
+                      values = c('#de2d26', '#ffeda0','#2b8cbe'), guide = 'legend')+
+  theme_ridges(font_size = 11, grid = TRUE) + 
+  theme(axis.title.y = element_blank(), 
+        plot.title = element_text(size = 15))
+
+q = ggplot(data2) +
+  geom_density_ridges(aes(x = age, y = tundo6, fill = TaiwanID), scale = 0.9, alpha = 0.5, from = 0, to = 101)+
+  scale_y_discrete(name = 'Independence vs. Unification',labels = c('Unification Immediately','Status Quo\nthen Unification' ,
+                            'Status Quo', 'Status Quo\nthen Indenpendence',
+                            'Independence Immediately'))+
+  scale_x_continuous(breaks = c(20,40,60,80), limits = c(10,100))+
+  scale_fill_cyclical(name = 'Taiwan Identification', labels = c('Chinese', 'Both', "Taiwanese"), 
+                      values = c('#de2d26', '#ffeda0','#2b8cbe'), guide = 'legend')+
+  theme_ridges(font_size = 11, grid = TRUE) + 
+  theme(axis.title.y = element_blank(), 
+        plot.title = element_text(size = 15))
+
+
+```
+
+```{r line plot, message = FALSE}
+
+ID = data %>% 
+  group_by(year, TaiwanID) %>%
+  tally()  %>%
+  mutate(per = n/sum(n), TaiwanID = case_when(
+    TaiwanID == -1 ~"Chinese",
+    TaiwanID == 0 ~'Both',
+    TaiwanID == 1 ~'Taiwanese'
+  )) %>%
+  select(-n)
+
+ID = ID %>% spread(TaiwanID, per)
+
+p2 = plot_ly(ID, x = ~year, y = ~Chinese, type = 'scatter', name = 'Chinese', mode = 'markers', marker = list(color= '#7f0000'), line = list(color= '#7f0000')) %>%
+  add_trace(y = ~Both, name= 'Both', mode = 'markers', line = list(color = '#fec44f'), marker = list(color = '#fec44f')) %>%
+  add_trace(y = ~Taiwanese, name = 'Taiwanese', mode = 'markers', line = list(color = '#006837'),marker = list(color = '#006837')) %>% 
+  layout(title = 'Taiwanese, Chinese, Or Both?',
+         xaxis = list(
+           title= "Year"),
+         yaxis = list(
+           title = '',
+           ticktext = list('10%', '20%', "30%", "40%", "50%", "60%"),
+           tickvals = list(0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+           tickmode = 'array'))
+
+tbl2 = data %>%
+  filter(year == 2017) %>%
+  select(year, age, TaiwanID) %>%
+  mutate(TaiwanID = case_when(
+    TaiwanID == -1 ~"Chinese",
+    TaiwanID == 0 ~'Both',
+    TaiwanID == 1 ~'Taiwanese'
+  ), age_group = case_when(
+    age >=20 & age < 30 ~"20-29",
+    age >=30 & age < 40 ~'30-39',
+    age >=40 & age < 50 ~'40~49', 
+    age >=50 & age < 60 ~'50~59',
+    age >=60 ~'60+')) %>%
+  drop_na() %>% 
+  select(-age) %>%
+  group_by(year, age_group, TaiwanID) %>% 
+  tally()%>%
+  mutate(per = n/sum(n)) %>%
+  select(-n) %>%
+  spread(TaiwanID, per)
+
+tbl2 = tbl2 %>% mutate_at(c('Both','Chinese','Taiwanese'), ~scales::percent(., accuracy = .1)) 
+tbl2 = tbl2 %>% rename("Year" = year, 'Age Group' = age_group)
+```
+
+
+## In Case You Are Wondering...
+```{r, out.width='40%', out.height='40%', fig.align='center'}
+knitr::include_graphics('tw_ind.jpg')
+```
+
+## Short History about Taiwan and China
+```{r, out.width='90%', out.height='90%', fig.align='center'}
+knitr::include_graphics('tw.png')
+```
+
+## Dive into Data {.build}
+- Taiwan National Security Studies Surveys (2002-2019) by Duke University
+- Sample size varies from 1069 to 1484 each year
+- Taiwanese Identity: Taiwanese? Chinese? Or Both?
+- Independence or Unification
+
+## Taiwanese Identity
+
+```{r, echo=FALSE, message=FALSE,  out.height='120%', out.width='100%'}
+p2
+```
+
+## What Happened in 2017?
+```{r}
+knitr::kable(tbl2)
+```
+
+## Independence vs. Unification in 2019?
+```{r echo=FALSE, message=FALSE, out.height='80%', out.width='90%'}
+q
+```
+
+## Thank You!
+
+- Instagram @suminisweird
+- Twitter @suminisweird
+- Github @szuminyu
+
+- Taiwanese Data Professionals @nytdp (Facebook & Twitter):
+Next event will be on June 28th with Lauren Oldja, data scientist from SparkBeyond/NYC Python and 
+me! `r emo::ji('developer')`
