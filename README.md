@@ -9,3 +9,4 @@ I mainly talked about two essential questions:
 2. Independence or Unification
 
 You can check out my slides for some interesting findings! Enjoy.
+(Please download the html file and then open it locally on your browser for the slides I made :D)
