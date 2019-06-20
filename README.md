@@ -2,7 +2,7 @@
 
 I gave this short talk about Taiwanese identity at the lightening talk event held by R Ladies NYC. (June 2019)
 
-The data is from Taiwan National Security Studies Surveys conducted by Duke University and National ChengChi University. You can find the data description and source here: https://sites.duke.edu/pass/
+Data is from Taiwan National Security Studies Surveys conducted by Duke University and National ChengChi University. You can find the data description and source here: https://sites.duke.edu/pass/
 
 I mainly talked about two essential questions:
 1. Taiwanese Identity: Taiwanese, Chinese, or Both
